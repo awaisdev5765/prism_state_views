@@ -11,6 +11,9 @@ import 'package:prism_state_views/prism_state_views.dart';
 /// Screenshot generator — renders the four states in a 2×2 grid into
 /// `doc/screenshot.png`.
 /// Run with: `SCREENSHOTS=1 flutter test test/screenshot_test.dart`
+/// Empty success builder used by the const state constructors.
+Widget _emptySuccess(String data) => const SizedBox.shrink();
+
 void main() {
   const key = ValueKey('screenshot');
 
@@ -21,10 +24,9 @@ void main() {
     }
     if (!dir.existsSync()) return;
     final families = <String, List<Uint8List>>{};
-    for (final file in dir
-        .listSync()
-        .whereType<File>()
-        .where((f) => f.path.endsWith('.ttf'))) {
+    for (final file in dir.listSync().whereType<File>().where(
+      (f) => f.path.endsWith('.ttf'),
+    )) {
       final name = file.uri.pathSegments.last.replaceAll('.ttf', '');
       final family = name.startsWith('RobotoMono')
           ? 'monospace'
@@ -38,22 +40,25 @@ void main() {
       }
       await loader.load();
     }
-    final flutterRoot = File(Platform.resolvedExecutable)
-        .parent
-        .parent
-        .parent
-        .parent
-        .parent
-        .path;
-    final iconFont = File(
-      '$flutterRoot/bin/cache/artifacts/material_fonts/'
-      'MaterialIcons-Regular.otf',
-    );
-    if (iconFont.existsSync()) {
+    // Walk up from the test runner binary to find the Flutter SDK's icon
+    // font — the exact depth varies between flutter/dart launch paths.
+    var sdkDir = File(Platform.resolvedExecutable).parent;
+    File? iconFont;
+    for (var i = 0; i < 8; i++) {
+      final candidate = File(
+        '${sdkDir.path}/bin/cache/artifacts/material_fonts/'
+        'MaterialIcons-Regular.otf',
+      );
+      if (candidate.existsSync()) {
+        iconFont = candidate;
+        break;
+      }
+      sdkDir = sdkDir.parent;
+    }
+    final resolved = iconFont;
+    if (resolved != null) {
       final loader = FontLoader('MaterialIcons')
-        ..addFont(
-          Future.value(iconFont.readAsBytesSync().buffer.asByteData()),
-        );
+        ..addFont(Future.value(resolved.readAsBytesSync().buffer.asByteData()));
       await loader.load();
     }
   }
@@ -93,7 +98,7 @@ void main() {
     (tester) async {
       await loadFonts();
       tester.view.physicalSize = const Size(900, 800);
-      tester.view.devicePixelRatio = 2.0;
+      tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
       await tester.pumpWidget(
@@ -126,7 +131,7 @@ void main() {
                                 state: PrismViewState.loading(
                                   message: 'Fetching…',
                                 ),
-                                successBuilder: SizedBox.new,
+                                successBuilder: _emptySuccess,
                               ),
                             ),
                           ),
@@ -141,7 +146,8 @@ void main() {
                                   'Network unreachable',
                                 ),
                                 onRetry: () {},
-                                successBuilder: SizedBox.new,
+                                successBuilder: (data) =>
+                                    const SizedBox.shrink(),
                               ),
                             ),
                           ),
@@ -162,7 +168,8 @@ void main() {
                                 emptyMessage: 'No items yet',
                                 emptyActionLabel: 'Add item',
                                 onEmptyAction: () {},
-                                successBuilder: SizedBox.new,
+                                successBuilder: (data) =>
+                                    const SizedBox.shrink(),
                               ),
                             ),
                           ),
@@ -198,15 +205,16 @@ void main() {
           ),
         ),
       );
-      await tester.pumpAndSettle();
+      // The loading state's spinner never settles — pump fixed frames.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       await tester.runAsync(() async {
         final boundary = tester.renderObject<RenderRepaintBoundary>(
           find.byKey(key),
         );
         final image = await boundary.toImage(pixelRatio: 2.0);
-        final byteData =
-            await image.toByteData(format: ImageByteFormat.png);
+        final byteData = await image.toByteData(format: ImageByteFormat.png);
         final file = File('doc/screenshot.png');
         await file.create(recursive: true);
         await file.writeAsBytes(byteData!.buffer.asUint8List());
