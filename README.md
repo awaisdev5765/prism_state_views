@@ -73,6 +73,12 @@ These packages are designed to work together:
 
 All pure Flutter, all six platforms, MIT licensed, built to work together.
 
+## Screenshot
+
+<p align="center">
+  <img src="doc/screenshot.png" alt="prism_state_views — loading, error, empty, and success states" width="420">
+</p>
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
