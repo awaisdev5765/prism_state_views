@@ -59,6 +59,20 @@ final state = PrismViewStateNotifier.fromFuture(loadItems());
 // Use with ValueListenableBuilder, or pass .value to PrismStateView.
 ```
 
+## The Prism package family
+
+These packages are designed to work together:
+
+| Package | What it does |
+| --- | --- |
+| [prism_markdown](https://pub.dev/packages/prism_markdown) | Markdown widget with full CommonMark + GFM support |
+| [prism_code_view](https://pub.dev/packages/prism_code_view) | Syntax-highlighted code viewer (Dart/JSON/YAML built in) |
+| [prism_adaptive_scaffold](https://pub.dev/packages/prism_adaptive_scaffold) | Responsive scaffolds: bottom bar → rail → extended rail |
+| [prism_adaptive_dialog](https://pub.dev/packages/prism_adaptive_dialog) | Dialogs that become bottom sheets on phones |
+| [prism_state_views](https://pub.dev/packages/prism_state_views) | Empty, loading, error, and success states from one widget |
+
+All pure Flutter, all six platforms, MIT licensed, built to work together.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
