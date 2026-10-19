@@ -20,14 +20,11 @@ sealed class PrismViewState<T> {
   const PrismViewState();
 
   /// Something is in progress.
-  const factory PrismViewState.loading({String? message}) =
-      PrismViewLoading<T>;
+  const factory PrismViewState.loading({String? message}) = PrismViewLoading<T>;
 
   /// Something went wrong. Carries the [error] and optional [stackTrace].
-  const factory PrismViewState.error([
-    Object? error,
-    StackTrace? stackTrace,
-  ]) = PrismViewError<T>;
+  const factory PrismViewState.error([Object? error, StackTrace? stackTrace]) =
+      PrismViewError<T>;
 
   /// The operation succeeded but produced no data (e.g. an empty list).
   const factory PrismViewState.empty() = PrismViewEmpty<T>;
@@ -81,13 +78,11 @@ class PrismViewSuccess<T> extends PrismViewState<T> {
 class PrismViewStateNotifier<T> extends ValueNotifier<PrismViewState<T>> {
   /// Creates a notifier starting in the loading state and tracking [future].
   PrismViewStateNotifier.fromFuture(Future<T> future)
-      : super(const PrismViewLoading()) {
+    : super(const PrismViewLoading()) {
     future.then(
       (data) {
         final isEmpty = data is Iterable && data.isEmpty;
-        value = isEmpty
-            ? const PrismViewEmpty()
-            : PrismViewSuccess(data);
+        value = isEmpty ? const PrismViewEmpty() : PrismViewSuccess(data);
       },
       onError: (Object error, StackTrace stackTrace) {
         value = PrismViewError(error, stackTrace);

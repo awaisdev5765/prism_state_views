@@ -83,80 +83,82 @@ class PrismStateView<T> extends StatelessWidget {
 
     final stateView = switch (state) {
       PrismViewLoading(:final message) => _Centered(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: 36,
-                height: 36,
-                child: CircularProgressIndicator(color: resolved.accentColor),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 36,
+              height: 36,
+              child: CircularProgressIndicator(color: resolved.accentColor),
+            ),
+            if ((loadingMessage ?? message) != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                loadingMessage ?? message!,
+                style: resolved.messageStyle,
+                textAlign: TextAlign.center,
               ),
-              if ((loadingMessage ?? message) != null) ...[
-                const SizedBox(height: 12),
-                Text(
-                  loadingMessage ?? message!,
-                  style: resolved.messageStyle,
-                  textAlign: TextAlign.center,
-                ),
-              ],
             ],
-          ),
+          ],
         ),
+      ),
       PrismViewError(:final error) => _Centered(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(errorIcon ?? Icons.error_outline,
-                  size: 48, color: resolved.errorColor),
-              const SizedBox(height: 12),
-              Text(
-                errorMessage ??
-                    (error?.toString() ?? 'Something went wrong.'),
-                style: resolved.messageStyle,
-                textAlign: TextAlign.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              errorIcon ?? Icons.error_outline,
+              size: 48,
+              color: resolved.errorColor,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              errorMessage ?? (error?.toString() ?? 'Something went wrong.'),
+              style: resolved.messageStyle,
+              textAlign: TextAlign.center,
+            ),
+            if (onRetry != null) ...[
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Retry'),
               ),
-              if (onRetry != null) ...[
-                const SizedBox(height: 16),
-                FilledButton.icon(
-                  onPressed: onRetry,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Retry'),
-                ),
-              ],
             ],
-          ),
+          ],
         ),
+      ),
       PrismViewEmpty() => _Centered(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(emptyIcon ?? Icons.inbox_outlined,
-                  size: 48, color: resolved.iconColor),
-              const SizedBox(height: 12),
-              Text(
-                emptyMessage ?? 'Nothing here yet.',
-                style: resolved.messageStyle,
-                textAlign: TextAlign.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              emptyIcon ?? Icons.inbox_outlined,
+              size: 48,
+              color: resolved.iconColor,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              emptyMessage ?? 'Nothing here yet.',
+              style: resolved.messageStyle,
+              textAlign: TextAlign.center,
+            ),
+            if (emptyActionLabel != null && onEmptyAction != null) ...[
+              const SizedBox(height: 16),
+              FilledButton.tonal(
+                onPressed: onEmptyAction,
+                child: Text(emptyActionLabel!),
               ),
-              if (emptyActionLabel != null && onEmptyAction != null) ...[
-                const SizedBox(height: 16),
-                FilledButton.tonal(
-                  onPressed: onEmptyAction,
-                  child: Text(emptyActionLabel!),
-                ),
-              ],
             ],
-          ),
+          ],
         ),
+      ),
       PrismViewSuccess(:final data) => successBuilder(data),
     };
 
     return AnimatedSwitcher(
       duration: resolved.transitionDuration,
-      child: KeyedSubtree(
-        key: ValueKey(state.runtimeType),
-        child: stateView,
-      ),
+      child: KeyedSubtree(key: ValueKey(state.runtimeType), child: stateView),
     );
   }
 }
@@ -169,10 +171,7 @@ class _Centered extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: child,
-      ),
+      child: Padding(padding: const EdgeInsets.all(24), child: child),
     );
   }
 }
